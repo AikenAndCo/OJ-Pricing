@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OJ Pricing · Formula Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #E8E2D8;
+  font-family: 'DM Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.card {
+  width: 680px;
+  background: #FAF7F2;
+  border-radius: 4px;
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.06),
+    0 8px 24px rgba(0,0,0,0.10),
+    0 0 0 1px rgba(0,0,0,0.04);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Ruled lines background */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 27px,
+    #E8E0D0 27px,
+    #E8E0D0 28px
+  );
+  top: 100px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Red margin line */
+.card::after {
+  content: '';
+  position: absolute;
+  left: 52px;
+  top: 100px;
+  bottom: 0;
+  width: 1.5px;
+  background: rgba(200,16,46,0.2);
+  pointer-events: none;
+}
+
+/* HEADER */
+.header {
+  background: #0F2A5C;
+  padding: 16px 28px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.wordmark {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.wordmark span { color: #C4A240; font-style: italic; font-weight: 400; }
+
+.header-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+
+.header-byline {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #C4A240;
+}
+
+/* GOLD RULE */
+.gold-rule {
+  height: 3px;
+  background: linear-gradient(90deg, #C4A240, #E8C860, #C4A240);
+}
+
+/* BODY */
+.body {
+  padding: 20px 28px 24px 28px;
+  position: relative;
+  z-index: 1;
+}
+
+/* WATERFALL SECTION */
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #C4A240;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 0.5px;
+  background: #C4A240;
+  opacity: 0.4;
+}
+
+/* WATERFALL ROWS */
+.waterfall {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 18px;
+}
+
+.wf-row {
+  display: grid;
+  grid-template-columns: 20px 140px 1fr 90px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+
+.wf-row:last-child { border-bottom: none; }
+
+.wf-row.total {
+  border-top: 1.5px solid rgba(15,42,92,0.15);
+  border-bottom: none;
+  padding-top: 8px;
+  margin-top: 2px;
+}
+
+.wf-sign {
+  font-size: 14px;
+  color: #AAA;
+  text-align: center;
+  font-weight: 300;
+}
+
+.wf-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #0F2A5C;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.wf-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.wf-formula {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.wf-formula em {
+  font-style: normal;
+  color: #C4A240;
+  font-weight: 500;
+}
+
+.wf-example {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: right;
+  color: #0F2A5C;
+}
+
+.wf-example.gold { color: #C4A240; }
+.wf-example.deduct { color: #C8102E; }
+
+/* DIVIDER */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(15,42,92,0.12), transparent);
+  margin: 14px 0;
+}
+
+/* TWO COLUMN */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.mini-card {
+  background: white;
+  border: 1px solid rgba(15,42,92,0.1);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+
+.mini-card-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #AAA;
+  margin-bottom: 6px;
+}
+
+.mini-formula-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 0.5px solid #F0EDE8;
+}
+
+.mini-formula-row:last-child { border-bottom: none; }
+
+.mfr-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #0F2A5C;
+}
+
+.mfr-formula {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  color: #888;
+}
+
+.mfr-example {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #C4A240;
+}
+
+/* SANITY CHECK BOX */
+.sanity {
+  background: #0F2A5C;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.sanity-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 4px;
+}
+
+.sanity-test {
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.6;
+}
+
+.sanity-test strong { color: #fff; }
+
+.sanity-result {
+  text-align: right;
+}
+
+.sanity-answer {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: #C4A240;
+  line-height: 1;
+}
+
+.sanity-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 1px;
+  margin-top: 2px;
+  text-align: right;
+}
+
+/* FOOTER */
+.footer {
+  padding: 8px 28px;
+  background: rgba(15,42,92,0.04);
+  border-top: 1px solid rgba(15,42,92,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-note {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #AAA;
+}
+
+.footer-mark {
+  font-family: 'Playfair Display', serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #C4A240;
+  font-style: italic;
+  letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <span class="wordmark">Aiken <span>&amp; Co</span></span>
+      <span class="header-title">OJ Pricing · Formula Reference</span>
+    </div>
+    <span class="header-byline">Jeff Aiken</span>
+  </div>
+  <div class="gold-rule"></div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <div class="section-label">P&amp;L Waterfall · Each % applies to its own level</div>
+
+    <div class="waterfall">
+
+      <div class="wf-row">
+        <span class="wf-sign"></span>
+        <span class="wf-label"><span class="wf-dot" style="background:#1D9E75;"></span>COGS</span>
+        <span class="wf-formula">Input — cost of goods</span>
+        <span class="wf-example">$1.00</span>
+      </div>
+
+      <div class="wf-row">
+        <span class="wf-sign">+</span>
+        <span class="wf-label"><span class="wf-dot" style="background:#C4A240;"></span>Cost increase</span>
+        <span class="wf-formula">COGS × tariff%</span>
+        <span class="wf-example deduct">+$0.30</span>
+      </div>
+
+      <div class="wf-row">
+        <span class="wf-sign">=</span>
+        <span class="wf-label"><span class="wf-dot" style="background:#3D8B6E;"></span>Total cost</span>
+        <span class="wf-formula">COGS + cost increase</span>
+        <span class="wf-example">$1.30</span>
+      </div>
+
+      <div class="wf-row">
+        <span class="wf-sign">÷</span>
+        <span class="wf-label"><span class="wf-dot" style="background:#7F77DD;"></span>Net Sales</span>
+        <span class="wf-formula">Total cost <em>÷ (1 − GM%)</em> &nbsp;·&nbsp; your margin is GM% of this</span>
+        <span class="wf-example">$2.60</span>
+      </div>
+
+      <div class="wf-row">
+        <span class="wf-sign">÷</span>
+        <span class="wf-label"><span class="wf-dot" style="background:#D85A30;"></span>NSP</span>
+        <span class="wf-formula">Net Sales <em>÷ (1 − G2N%)</em> &nbsp;·&nbsp; promo / trade spend is G2N% of NSP</span>
+        <span class="wf-example">$3.25</span>
+      </div>
+
+      <div class="wf-row total">
+        <span class="wf-sign">=</span>
+        <span class="wf-label"><span class="wf-dot" style="background:#378ADD;"></span>Shelf Price</span>
+        <span class="wf-formula">NSP <em>÷ (1 − Retailer%)</em> &nbsp;·&nbsp; retailer keeps Ret% of shelf</span>
+        <span class="wf-example gold">$4.54</span>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- SHORTCUTS -->
+    <div class="two-col">
+
+      <div class="mini-card">
+        <div class="mini-card-label">Dollar amounts</div>
+        <div class="mini-formula-row">
+          <span class="mfr-label">Your margin $</span>
+          <span class="mfr-formula">Net Sales × GM%</span>
+          <span class="mfr-example">$1.30</span>
+        </div>
+        <div class="mini-formula-row">
+          <span class="mfr-label">G2N $</span>
+          <span class="mfr-formula">NSP × G2N%</span>
+          <span class="mfr-example">$0.65</span>
+        </div>
+        <div class="mini-formula-row">
+          <span class="mfr-label">Retailer $</span>
+          <span class="mfr-formula">Shelf × Ret%</span>
+          <span class="mfr-example">$1.29</span>
+        </div>
+        <div class="mini-formula-row">
+          <span class="mfr-label">Tariff $</span>
+          <span class="mfr-formula">COGS × tariff%</span>
+          <span class="mfr-example">$0.30</span>
+        </div>
+      </div>
+
+      <div class="mini-card">
+        <div class="mini-card-label">Squeeze mode — price locked</div>
+        <div class="mini-formula-row">
+          <span class="mfr-label">Base shelf</span>
+          <span class="mfr-formula">from COGS (no tariff)</span>
+          <span class="mfr-example">$4.17</span>
+        </div>
+        <div class="mini-formula-row">
+          <span class="mfr-label">Shelf stays</span>
+          <span class="mfr-formula">locked at base</span>
+          <span class="mfr-example">$4.17</span>
+        </div>
+        <div class="mini-formula-row">
+          <span class="mfr-label">Your margin $</span>
+          <span class="mfr-formula">Net Sales − total cost</span>
+          <span class="mfr-example">$1.00</span>
+        </div>
+        <div class="mini-formula-row">
+          <span class="mfr-label">Margin drop</span>
+          <span class="mfr-formula">tariff$ absorbed by you</span>
+          <span class="mfr-example">−$0.30</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SANITY CHECK -->
+    <div class="sanity">
+      <div>
+        <div class="sanity-title">Sanity check · zero everything except COGS + GM%</div>
+        <div class="sanity-test">
+          Set <strong>COGS = $1</strong>, <strong>GM = 50%</strong>, promos = 0%, retailer = 0%, tariff = 0%<br>
+          Net Sales = $1 ÷ 0.50 = <strong>$2.00</strong> &nbsp;·&nbsp; NSP = $2.00 &nbsp;·&nbsp; Shelf = <strong>$2.00</strong>
+        </div>
+      </div>
+      <div class="sanity-result">
+        <div class="sanity-answer">$2.00</div>
+        <div class="sanity-label">expected shelf</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-note">Orange Juice Theory of Business · Internal Reference</span>
+    <span class="footer-mark">Aiken &amp; Co</span>
+  </div>
+
+</div>
+
+</body>
+</html>
