@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Cost Increase Pricing Tool · Jeff Aiken</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root { color-scheme: light only; }
+
+:root {
+  --navy: #0F2A5C;
+  --gold: #C4A240;
+  --cream: #F5F0E8;
+  --ink: #0F2A5C;
+  --ink-mid: #1A3A7A;
+  --ink-light: #7A8099;
+  --ink-faint: #C8CEDC;
+  --green: #1D9E75;
+  --red: #C8102E;
+  --border: #D8D2C4;
+  --white: #FFFFFF;
+}
+
+html, body {
+  height: 100%;
+  background: #F5F0E8 !important;
+  background-color: #F5F0E8 !important;
+  font-family: 'DM Sans', sans-serif;
+  color: #0F2A5C;
+}
+
+.shell {
+  min-height: 100vh;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 40px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* BYLINE */
+.byline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--navy);
+}
+.byline-name {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.byline-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+}
+
+/* HOOK */
+.hook {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--navy);
+  letter-spacing: -1px;
+}
+.hook em { font-style: normal; color: var(--gold); }
+.hook-sub {
+  font-size: 15px;
+  color: var(--ink-light);
+  line-height: 1.6;
+  margin-top: 8px;
+}
+.hook-sub strong { color: var(--ink-mid); font-weight: 600; }
+
+/* TWO COLUMN BODY */
+.body-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* LEFT COLUMN */
+.left { display: flex; flex-direction: column; gap: 16px; }
+
+/* PRICE HERO */
+.price-hero {
+  padding: 20px 24px;
+  border-radius: 16px;
+  border: 2px solid var(--border);
+  transition: background .2s, border-color .2s;
+}
+.price-hero.pass    { background: #F0FBF6; border-color: #9FE1CB; }
+.price-hero.squeeze { background: #FFF5F5; border-color: #F7C1C1; }
+.price-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--ink-light);
+  margin-bottom: 4px;
+}
+.price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+.price-num {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(64px, 8vw, 96px);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--navy);
+}
+.price-change {
+  font-size: 18px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+.price-change.up   { background: #FFE4E4; color: var(--red); }
+.price-change.down { background: #FFEDE4; color: #C86020; }
+.price-msg {
+  font-size: 17px;
+  font-weight: 600;
+  margin-top: 8px;
+  min-height: 24px;
+  line-height: 1.4;
+  color: var(--gold);
+}
+.price-msg.green { color: var(--green); }
+.price-msg.warn  { color: var(--red); }
+
+/* TOGGLE */
+.toggle-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+}
+.toggle-btn {
+  padding: 14px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  background: #EDE8DF;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.3;
+  transition: background .15s;
+}
+.toggle-btn:first-child { border-right: 1.5px solid var(--border); }
+.toggle-btn .t-main { display: block; font-size: 15px; font-weight: 700; color: var(--ink-mid); }
+.toggle-btn .t-sub  { display: block; font-size: 13px; color: var(--ink-light); margin-top: 2px; }
+.toggle-btn.active { background: var(--navy); }
+.toggle-btn.active .t-main { color: #fff; }
+.toggle-btn.active .t-sub  { color: rgba(255,255,255,.5); }
+
+/* CLOSING */
+.closing {
+  border-radius: 14px;
+  background: var(--navy);
+  color: white;
+  text-align: center;
+  padding: 20px 24px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .4s ease, transform .4s ease;
+  pointer-events: none;
+}
+.closing.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.closing-main {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(18px, 2.5vw, 26px);
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+.closing-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,.5);
+}
+
+/* RIGHT COLUMN */
+.right { display: flex; flex-direction: column; gap: 16px; }
+
+/* TARIFF BOX */
+.tariff-box {
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  padding: 16px 20px;
+  background: #FBF7EE;
+}
+.tariff-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.tariff-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.tariff-val {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gold);
+  min-width: 60px;
+  text-align: right;
+}
+.tariff-sub {
+  font-size: 13px;
+  color: var(--ink-light);
+  margin-bottom: 8px;
+}
+input[type=range] {
+  width: 100%;
+  cursor: pointer;
+  accent-color: var(--gold);
+  height: 4px;
+}
+
+/* SLIDERS */
+.sliders { display: flex; flex-direction: column; gap: 10px; }
+.sl-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sl-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.sl-label { font-size: 14px; font-weight: 500; color: var(--ink-mid); width: 130px; flex-shrink: 0; }
+.sl-input { flex: 1; }
+.sl-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  min-width: 44px;
+  text-align: right;
+  color: var(--ink);
+}
+.sl-dollar {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  min-width: 50px;
+  text-align: right;
+  color: var(--gold);
+}
+
+/* CHECK MY MATH */
+.math-panel {
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--white);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.math-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--navy);
+  cursor: pointer;
+}
+.math-header-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+}
+.math-toggle-icon {
+  font-size: 14px;
+  color: var(--gold);
+  transition: transform .2s;
+}
+.math-toggle-icon.open { transform: rotate(180deg); }
+.math-body {
+  display: none;
+  padding: 10px 14px;
+  gap: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.math-body.visible { display: flex; flex-direction: column; }
+.math-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid #F0EDE8;
+  font-size: 13px;
+}
+.math-row:last-child { border-bottom: none; font-weight: 700; }
+.math-row-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-mid);
+}
+.math-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.math-sign { color: var(--ink-faint); font-size: 12px; width: 14px; text-align: center; }
+.math-formula { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--ink-faint); }
+.math-val { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 700; color: var(--navy); }
+.math-val.highlight { color: var(--gold); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="byline">
+    <span class="byline-name">Jeff Aiken</span>
+    <span class="byline-tag">Revenue Growth Management</span>
+  </div>
+
+  <div>
+    <h1 class="hook">Every cost increase forces a choice.<br><em>Raise the price.</em> Or shrink the margin.</h1>
+    <p class="hook-sub"><strong>Margin is what's left after paying for everything.</strong> Move the cost increase slider — watch what happens.</p>
+  </div>
+
+  <div class="body-grid">
+
+    <!-- LEFT: Price + Toggle + Closing -->
+    <div class="left">
+      <div class="price-hero pass" id="price-card">
+        <div class="price-lbl" id="price-lbl">Shelf price</div>
+        <div class="price-row">
+          <span class="price-num" id="price-num">—</span>
+          <span class="price-change" id="price-change"></span>
+        </div>
+        <div class="price-msg green" id="price-msg">No cost increase — baseline price</div>
+      </div>
+
+      <div class="toggle-row">
+        <button class="toggle-btn active" id="btn-pass" onclick="setMode('pass')">
+          <span class="t-main">Customer pays</span>
+          <span class="t-sub">Price goes up</span>
+        </button>
+        <button class="toggle-btn" id="btn-squeeze" onclick="setMode('squeeze')">
+          <span class="t-main">You pay</span>
+          <span class="t-sub">Margin gets squeezed</span>
+        </button>
+      </div>
+
+      <div class="closing" id="closing">
+        <div class="closing-main">"This is every business.<br>Every cost lives somewhere."</div>
+        <div class="closing-sub">OJ. Plumbing. Restaurants. Retail. The math always balances.</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Tariff + Sliders -->
+    <div class="right">
+      <div class="tariff-box">
+        <div class="tariff-top">
+          <span class="tariff-name">
+            <span style="width:12px;height:12px;background:var(--gold);border-radius:2px;display:inline-block;"></span>
+            Cost increase
+          </span>
+          <span class="tariff-val" id="v-tariff">0%</span>
+        </div>
+        <div class="tariff-sub">Move this — watch what happens</div>
+        <input type="range" id="s-tariff" min="0" max="50" value="0" step="1">
+      </div>
+
+      <div class="sliders">
+        <div class="sl-row">
+          <span class="sl-dot" style="background:#1D9E75;"></span>
+          <span class="sl-label">Your costs</span>
+          <input type="range" id="s-cogs" min="10" max="200" value="100" step="1" class="sl-input">
+          <span class="sl-val" id="v-cogs">$1.00</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-dot" style="background:#7F77DD;"></span>
+          <span class="sl-label">Your margin</span>
+          <input type="range" id="s-brand" min="5" max="90" value="40" step="1" class="sl-input">
+          <span class="sl-val" id="v-brand">40%</span>
+          <span class="sl-dollar" id="d-brand">$0.00</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-dot" style="background:#D85A30;"></span>
+          <span class="sl-label">Promos</span>
+          <input type="range" id="s-trade" min="0" max="50" value="20" step="1" class="sl-input">
+          <span class="sl-val" id="v-trade">20%</span>
+          <span class="sl-dollar" id="d-trade">$0.00</span>
+        </div>
+        <div class="sl-row">
+          <span class="sl-dot" style="background:#378ADD;"></span>
+          <span class="sl-label">Retailer margin</span>
+          <input type="range" id="s-retail" min="0" max="60" value="24" step="1" class="sl-input">
+          <span class="sl-val" id="v-retail">24%</span>
+          <span class="sl-dollar" id="d-retail">$0.00</span>
+        </div>
+      </div>
+    
+  <div class="math-panel" id="math-panel">
+    <div class="math-header" onclick="toggleMath()">
+      <span class="math-header-label">Check my math</span>
+      <span class="math-toggle-icon" id="math-icon">▼</span>
+    </div>
+    <div class="math-body" id="math-body">
+      <div class="math-row">
+        <span class="math-row-left"><span class="math-dot" style="background:#1D9E75;"></span>COGS</span>
+        <span class="math-formula" id="mf-cogs"></span>
+        <span class="math-val" id="mv-cogs">—</span>
+      </div>
+      <div class="math-row">
+        <span class="math-row-left"><span class="math-sign">+</span><span class="math-dot" style="background:#C4A240;"></span>Cost increase</span>
+        <span class="math-formula" id="mf-tariff"></span>
+        <span class="math-val" id="mv-tariff">—</span>
+      </div>
+      <div class="math-row">
+        <span class="math-row-left"><span class="math-sign">=</span><span class="math-dot" style="background:#8B7FBB;"></span>Total cost</span>
+        <span class="math-formula" id="mf-totalcost"></span>
+        <span class="math-val" id="mv-totalcost">—</span>
+      </div>
+      <div class="math-row">
+        <span class="math-row-left"><span class="math-dot" style="background:#7F77DD;"></span>Net Sales</span>
+        <span class="math-formula" id="mf-ns"></span>
+        <span class="math-val" id="mv-ns">—</span>
+      </div>
+      <div class="math-row">
+        <span class="math-row-left"><span class="math-dot" style="background:#D85A30;"></span>NSP</span>
+        <span class="math-formula" id="mf-nsp"></span>
+        <span class="math-val" id="mv-nsp">—</span>
+      </div>
+      <div class="math-row">
+        <span class="math-row-left"><span class="math-dot" style="background:#378ADD;"></span>Shelf price</span>
+        <span class="math-formula" id="mf-shelf"></span>
+        <span class="math-val highlight" id="mv-shelf">—</span>
+      </div>
+    </div>
+  </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var mode = 'pass';
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-pass').classList.toggle('active', m === 'pass');
+  document.getElementById('btn-squeeze').classList.toggle('active', m === 'squeeze');
+  document.getElementById('price-card').className = 'price-hero ' + m;
+  render();
+}
+
+function gv(id) { return parseInt(document.getElementById('s-' + id).value); }
+
+function render() {
+  var cogsC   = gv('cogs') / 100;
+  var tariffR = gv('tariff') / 100;
+  var brandR  = gv('brand') / 100;
+  var tradeR  = gv('trade') / 100;
+  var retailR = gv('retail') / 100;
+
+  document.getElementById('v-cogs').textContent   = '$' + cogsC.toFixed(2);
+  document.getElementById('v-tariff').textContent = gv('tariff') + '%';
+  document.getElementById('v-brand').textContent  = gv('brand') + '%';
+  document.getElementById('v-trade').textContent  = gv('trade') + '%';
+  document.getElementById('v-retail').textContent = gv('retail') + '%';
+
+  var priceNum    = document.getElementById('price-num');
+  var priceChange = document.getElementById('price-change');
+  var priceMsg    = document.getElementById('price-msg');
+  var priceLbl    = document.getElementById('price-lbl');
+
+  if (brandR >= 0.999 || retailR >= 0.999 || tradeR >= 0.999) {
+    priceNum.textContent = '—';
+    priceMsg.textContent = 'One slider is at 100% — adjust it';
+    priceMsg.className = 'price-msg warn';
+    priceChange.textContent = '';
+    return;
+  }
+
+  // ── CORRECT P&L WATERFALL ──
+  // COGS → ÷(1-GM%) → Net Sales → ÷(1-G2N%) → NSP → ÷(1-Ret%) → Shelf
+  var baseNetSales = cogsC / (1 - brandR);
+  var baseNSP      = baseNetSales / (1 - tradeR);
+  var baseShelf    = baseNSP / (1 - retailR);
+  var baseTradeD   = baseNSP * tradeR;
+  var baseRetailD  = baseShelf * retailR;
+
+  var tariffDollar   = cogsC * tariffR;
+  var cogsWithTariff = cogsC + tariffDollar;
+
+  var shelf, netSales, nsp, brandDollar;
+
+  function scaleFont(val) {
+    var len = val.toFixed(2).length;
+    return len > 7 ? '52px' : len > 6 ? '64px' : len > 5 ? '80px' : 'clamp(64px,8vw,96px)';
+  }
+
+  if (mode === 'pass') {
+    netSales    = cogsWithTariff / (1 - brandR);
+    nsp         = netSales / (1 - tradeR);
+    shelf       = nsp / (1 - retailR);
+    brandDollar = netSales * brandR;
+
+    priceLbl.textContent = 'Shelf price — customer absorbs it';
+    priceNum.textContent = '$' + shelf.toFixed(2);
+    priceNum.style.fontSize = scaleFont(shelf);
+
+    var pct = (shelf - baseShelf) / baseShelf * 100;
+    if (tariffR < 0.001) {
+      priceChange.textContent = ''; priceChange.className = 'price-change';
+      priceMsg.textContent = 'No cost increase — baseline price';
+      priceMsg.className = 'price-msg green';
+    } else {
+      priceChange.textContent = '+' + pct.toFixed(1) + '%';
+      priceChange.className = 'price-change up';
+      priceMsg.textContent = 'Customer pays $' + (shelf - baseShelf).toFixed(2) + ' more per unit';
+      priceMsg.className = 'price-msg';
+    }
+
+  } else {
+    shelf       = baseShelf;
+    netSales    = baseNetSales;
+    brandDollar = netSales - cogsWithTariff;
+
+    priceLbl.textContent = 'Shelf price — locked, you absorb it';
+    priceNum.textContent = '$' + shelf.toFixed(2);
+    priceNum.style.fontSize = scaleFont(shelf);
+    priceChange.textContent = ''; priceChange.className = 'price-change';
+
+    if (tariffR < 0.001) {
+      priceMsg.textContent = 'No cost increase — full margin intact';
+      priceMsg.className = 'price-msg green';
+    } else if (brandDollar < 0) {
+      priceMsg.textContent = 'Margin wiped — losing $' + Math.abs(brandDollar).toFixed(2) + ' per unit';
+      priceMsg.className = 'price-msg warn';
+    } else {
+      var actualGM  = (brandDollar / netSales * 100).toFixed(1);
+      var lostPts   = (gv('brand') - parseFloat(actualGM)).toFixed(1);
+      var lostDollar = (netSales * brandR - brandDollar).toFixed(2);
+      priceMsg.textContent = gv('brand') + '% → ' + actualGM + '% (−' + lostPts + ' pts · −$' + lostDollar + '/unit)';
+      priceMsg.className = 'price-msg';
+    }
+  }
+
+  // Slider dollar values — always use base waterfall
+  var ns  = cogsC / (1 - brandR);
+  var nsp2 = ns / (1 - tradeR);
+  var sh  = nsp2 / (1 - retailR);
+  document.getElementById('d-brand').textContent  = '$' + (ns * brandR).toFixed(2);
+  document.getElementById('d-trade').textContent  = '$' + (nsp2 * tradeR).toFixed(2);
+  document.getElementById('d-retail').textContent = '$' + (sh * retailR).toFixed(2);
+
+  document.getElementById('closing').classList.toggle('visible', gv('tariff') >= 28);
+  updateMath(cogsC, tariffR, brandR, tradeR, retailR, mode);
+}
+
+
+function toggleMath() {
+  var body = document.getElementById('math-body');
+  var icon = document.getElementById('math-icon');
+  var open = body.classList.toggle('visible');
+  icon.classList.toggle('open', open);
+}
+
+function updateMath(cogsC, tariffR, brandR, tradeR, retailR, mode) {
+  var tariffDollar   = cogsC * tariffR;
+  var cogsWithTariff = cogsC + tariffDollar;
+
+  var netSales, nsp, shelf;
+  if (mode === 'pass') {
+    netSales = cogsWithTariff / (1 - brandR);
+  } else {
+    netSales = cogsC / (1 - brandR); // base — price locked
+  }
+  nsp   = netSales / (1 - tradeR);
+  shelf = nsp / (1 - retailR);
+
+  var f = function(n) { return '$' + n.toFixed(2); };
+  var pct = function(r) { return (r*100).toFixed(0) + '%'; };
+
+  document.getElementById('mv-cogs').textContent      = f(cogsC);
+  document.getElementById('mf-cogs').textContent      = 'input';
+  document.getElementById('mv-tariff').textContent    = f(tariffDollar);
+  document.getElementById('mf-tariff').textContent    = f(cogsC) + ' × ' + pct(tariffR);
+  document.getElementById('mv-totalcost').textContent = f(cogsWithTariff);
+  document.getElementById('mf-totalcost').textContent = f(cogsC) + ' + ' + f(tariffDollar);
+  document.getElementById('mv-ns').textContent        = f(netSales);
+  document.getElementById('mf-ns').textContent        = f(cogsWithTariff) + ' ÷ (1−' + pct(brandR) + ')';
+  document.getElementById('mv-nsp').textContent       = f(nsp);
+  document.getElementById('mf-nsp').textContent       = f(netSales) + ' ÷ (1−' + pct(tradeR) + ')';
+  document.getElementById('mv-shelf').textContent     = f(shelf);
+  document.getElementById('mf-shelf').textContent     = f(nsp) + ' ÷ (1−' + pct(retailR) + ')';
+}
+
+['cogs','tariff','brand','trade','retail'].forEach(function(id) {
+  document.getElementById('s-' + id).addEventListener('input', render);
+});
+
+(function animateTariff() {
+  var slider = document.getElementById('s-tariff');
+  var target = 45, duration = 2800, start = null;
+  function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+  function step(ts) {
+    if (!start) start = ts;
+    var p = Math.min((ts - start) / duration, 1);
+    slider.value = Math.round(ease(p) * target);
+    render();
+    if (p < 1) requestAnimationFrame(step);
+    else setTimeout(render, 200);
+  }
+  setTimeout(function() { requestAnimationFrame(step); }, 600);
+})();
+
+render();
+</script>
+</body>
+</html>
